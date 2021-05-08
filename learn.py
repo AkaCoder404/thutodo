@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup as bs
 url = 'https://learn.tsinghua.edu.cn'
 user_agent = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36"
 request_headers = {
-  'User-Angent' : user_agent,
+  'User-Agent' : user_agent,
   'Connection' : 'keep-alive'
 }
 
@@ -173,20 +173,17 @@ def load_hw(username, course):
 
 def append_announcements_csv(file_name, hw):
   """Appending Announcements CSV"""
-  
+
 def load_announcements(username, course):
   """Loading Announcements"""
 
 
-
 def main():
   # arguments
-  print(args)
+  # print(args)
   # username and password
   username = input('请输入INFO账号: ')
   password = getpass.getpass('请输入INFO密码: ')
-
-
 
   login_status = login(username, password)
 
@@ -211,3 +208,5 @@ def main():
 
 if __name__ == '__main__':
   main();
+
+  
