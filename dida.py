@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 
 # imports
@@ -11,9 +10,10 @@ import calendar, time, datetime
 import urllib.request
 import requests
 import http.cookiejar
+import random, string
 from bs4 import BeautifulSoup as bs
 
-pp = pprint.PrettyPrinter(indent=4, depth=3) 
+pp = pprint.PrettyPrinter(indent=4, depth=4) 
 
 cookie = http.cookiejar.MozillaCookieJar()
 handler = urllib.request.HTTPCookieProcessor(cookie)
@@ -48,10 +48,26 @@ def request_page_get(request_url, data={}, session=None):
   except Exception as e:
     print('Error', e, request_url)
 
-
-
 def load_json(request_url, data={}):
   '''load json data'''
+
+def load_csv(file_name):
+  '''read csv'''
+
+  headers = []
+  entries = []
+
+  with open(file_name, 'r') as f:
+    csvreader = csv.reader(f)
+    # print(csvreader)
+    headers = next(csvreader)
+    for entry in csvreader:
+      # print(entry)
+      if(entry[5] == '0'):
+        entries.append(entry)
+
+  # pp.pprint(entries)
+  return entries
 
 
 def load_tasks(session):
@@ -69,20 +85,73 @@ def load_tasks(session):
   # 7天之内
   incomplete_tasks = page['syncTaskBean']['update']
 
-  for task in incomplete_tasks:
-    # print(task)
-    # print(task['title'])
-    print(task['title'], 'No Due Date' if 'dueDate' not in task else task['dueDate'].split('T')[0])
+  # for task in incomplete_tasks:
+  #   # print(task)
+  #   # print(task['title'])
+  #   print(task['title'], 'No Due Date' if 'dueDate' not in task else task['dueDate'].split('T')[0])
+  return groups
 
+
+def upload_tasks(groups, tasks, session):
+  '''upload tasks from csv to online'''
+  request_url = 'https://api.dida365.com/api/v2/batch/task'
+
+  # Homework 清单
+  group_id = ""
+  for group in groups:
+    if group['name'] == "Homework":
+      group_id = group['id']
+      print(group_id)
   
+  current_time = str(datetime.datetime.now()).split(' ')
+  current_time = current_time[0] + 'T' + current_time[1].split(":")[0] + ":" + current_time[1].split(":")[1] + ".000+0000"
+
+  for task in tasks:
+    # pp.pprint(task)
+    task_due_date = task[4].split("-")
+    task_due_date = datetime.datetime(year=int(task_due_date[0]), month=int(task_due_date[1]), day=int(task_due_date[2].split(' ')[0]))
+    task_due_date = task_due_date -  datetime.timedelta(hours=24)
+    task_due_date = str(task_due_date).split(" ")[0] + "T16:00:00.000+0000"
+    print(task_due_date)
+    random_id = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(24))
+    data = {
+    "add": [
+      {
+          "assignee": None,
+          "content": task[2],
+          "createdTime": str(current_time),
+          "dueDate": None,
+          "exDate": [],
+          "id": str(random_id),
+          "isAllDay": "true",
+          "isFloating": "false",
+          "items": [],
+          "kind": None,
+          "modifiedTime": str(current_time),
+          "priority": 0,
+          "progress": 0,
+          "projectId": group_id,
+          "reminders": [],
+          "repeatFlag": None,
+          "sortOrder": -73117523247104,
+          "startDate": task_due_date,
+          "status": 0,
+          "tags": [],
+          "timeZone": "Asia/Shanghai",
+          "title": task[0] + " " + task[1]
+      }
+    ],
+    "delete": [],
+    "update": []
+    }
+    request_page(request_url, data, session)
+
 def login(username, password, session):
+  '''login to Dida'''
   request_url = 'https://api.dida365.com/api/v2/user/signon?wc=true&remember=true'
-  # request_url_2 = 'https://ei.cnzz.com/stat.htm?id=1253390991&r=https%3A%2F%2Fwww.dida365.com%2F&lg=en-us&ntime=1620435542&cnzz_eid=2115462993-1620222200-https%3A%2F%2Fwww.bing.com%2F&showp=1600x900&p=https%3A%2F%2Fwww.dida365.com%2Fsignin&ei=signin_up%7Csignin_dida%7Cemail%7C0%7C&t=%E7%99%BB%E5%BD%95%20-%20%E6%BB%B4%E7%AD%94%E6%B8%85%E5%8D%95&umuuid=1793d0eeb3c53d-0356cc3c02cebc-d7e1739-144000-1793d0eeb3d4b9&h=1&rnd=1741872691'
-  data = { 
-    "password" : password,
-    "username": username
-  }
+  data = {  "password" : password, "username": username }
   page = request_page(request_url, data, session)
+  # print(page)
   successful = "username" in page
 
   if successful:
@@ -90,27 +159,27 @@ def login(username, password, session):
   else:
     print("登入Dida失败", page["errorCode"])
 
+  return successful
 
 def main():
   '''main function'''
   username = input('请输入滴答账号: ')
   password = getpass.getpass('请输入滴答密码: ')
- 
 
+ 
+ 
   # create session
   session = requests.Session()
-  print(session)
+  # 登入
+  is_login_successful = login(username, password, session)
+  groups = load_tasks(session)
 
-  login(username, password, session)
-  # load_tasks(session)
-  
+  # pp.pprint(groups)
 
-=======
-
-
-def main():
-  print("dida")
->>>>>>> 73ccedfb4ad58abf0c03bf8486ea5dcb52cad661
+  if is_login_successful:
+    # hw from learn
+    learn_tasks = load_csv('csv/unsubmitted.csv')
+    upload_tasks(groups, learn_tasks, session)
 
 if __name__ == '__main__':
   main()

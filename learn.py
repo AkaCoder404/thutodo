@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup as bs
 url = 'https://learn.tsinghua.edu.cn'
 user_agent = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36"
 request_headers = {
-  'User-Agent' : user_agent,
+  'User-Angent' : user_agent,
   'Connection' : 'keep-alive'
 }
 
@@ -32,7 +32,7 @@ arg_parser = argparse.ArgumentParser(description = 'thutodo') # argument parser
 # arg_parser.add_argument('--semester', help = 'semester')
 arg_parser.add_argument('--course', help = 'course')
 arg_parser.add_argument('--homework', help = 'homework')
-arg_parser.add_argument('--download', help = 'download')
+
 arg_parser.add_argument('--wj', help = 'unsubmitted homework', action="store_true")
 arg_parser.add_argument('--yj', help = 'submitted homework', action="store_true")
 arg_parser.add_argument('--yp', help = 'graded homework', action="store_true")
@@ -43,7 +43,7 @@ def request_page(request_url, data={}):
   post_data = urllib.parse.urlencode(data).encode() if data else None
   # make request
   request = urllib.request.Request(request_url if request_url.startswith('http') else url + request_url, post_data, request_headers)
-  
+
   try: 
     # response = opener.open(request)
     response = urllib.request.urlopen(request)
@@ -51,8 +51,9 @@ def request_page(request_url, data={}):
   except urllib.error.URLError as e:
     print(request_url, e.code, ':', e.reason)
   except Exception as e:
-    print(e, request_url)   
-  
+    print(e, request_url)
+
+
 def load_json(request_url, data={}): 
     try: 
       page = request_page(request_url, data)
@@ -61,26 +62,6 @@ def load_json(request_url, data={}):
     except Exception as e:
       print(e)
       return {}
-
-def download_resource():
-  print("downloading")
-  # filename = escape(name)
-  # if os.path.exists(filename) and os.path.getsize(filename) or 'Connection__close' in filename:
-  #     return
-  # try:
-  #     with TqdmUpTo(ascii=True, dynamic_ncols=True, unit='B', unit_scale=True, miniters=1, desc=filename) as t:
-  #         urllib.request.urlretrieve(url + uri, filename=filename, reporthook=t.update_to, data=None)
-  # except:
-  #     print('Could not download file %s ... removing broken file' % filename)
-  #     if os.path.exists(filename):
-  #         os.remove(filename)
-  #     return
-
-def append_announcement_csv():
-  print("append announcement csv")
-
-def load_announcements():
-  print("loading announcements")
 
 def load_courses():
     try:
@@ -99,7 +80,7 @@ def load_courses():
       except Exception as e:
         print(e) 
       return courses
-     
+
     except:
       print("休学？退学？")
       return []
@@ -107,7 +88,11 @@ def load_courses():
 def login(username, password):
   # api
   request_url = 'https://id.tsinghua.edu.cn/do/off/ui/auth/login/post/bb5df85216504820be7bba2b0ae1535b/0?/login.do'
-  data = { 'i_user' : username, 'i_pass' : password, 'atOnce' : 'true' }
+  data = {
+    'i_user' : username, 
+    'i_pass' : password,
+    'atOnce' : 'true'
+  }
 
   # make request and return page html
   page = request_page(request_url, data)
@@ -127,7 +112,7 @@ def login(username, password):
     redirect_page = request_page(request_page(redirect_url).split('location="')[1].split('";\r\n')[0])
     # print(redirect_page)
   return successful
-  
+
 def append_hw_csv(file_name, hw):
   csv_content = []
 
@@ -138,14 +123,17 @@ def append_hw_csv(file_name, hw):
 
   current_time = str(datetime.datetime.now()).split('.')[0]
   # print(current_time)
-  
+
   hw_info = [hw['kcm'], hw['bt'], hw['description'], hw['kssjStr'], hw['jzsjStr'], '0']
   # print(hw_info)
   # csv_content.append(hw_info)
   if hw_info not in csv_content and current_time < hw['jzsjStr'] :
     csv_content.append(hw_info)
-   
-  csv.writer(open(file_name, 'w')).writerows(csv_content)
+    # print(csv_content)
+    csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
+
+  # csv.DictWriter(file, fieldnames=fields, lineterminator = '\n')
+ 
 
 def load_hw(username, course):
   # create hw folder
@@ -159,8 +147,7 @@ def load_hw(username, course):
     'wlkcid': course['wlkcid'],
     'size' : ''
   }
-  
-  ## 作业未交、作业已交，作业已批改
+
   hw_types = ['zyListWj', 'zyListYjwg', 'zyListYpg']
 
   # load all hw for course
@@ -186,22 +173,15 @@ def load_hw(username, course):
       # print(hw_page_description.text)
 
 
-    append_hw_csv(os.path.join(csv_folder, username + '_' + hw_types[0] + '.csv'), hw)
-
-def append_announcements_csv(file_name, hw):
-  """Appending Announcements CSV"""
-
-def load_announcements(username, course):
-  """Loading Announcements"""
-
+    append_hw_csv(os.path.join(csv_folder, 'unsubmitted.csv'), hw)
 
 def main():
   # arguments
   # print(args)
   # username and password
-
   username = input('请输入INFO账号: ')
   password = getpass.getpass('请输入INFO密码: ')
+
   login_status = login(username, password)
 
   # if login succcessful
@@ -216,12 +196,12 @@ def main():
     for course in courses:
       print('syncing', course['kcm'])
       # course folders feature to store relative documents
-      if not os.path.exists(course['kcm']):
-        os.makedirs(course['kcm'])
+      # if not os.path.exists(course['kcm']):
+      #   os.makedirs(course['kcm'])
 
       load_hw(username, course)
     # print(courses[0]['kcm'])
     # load_hw(courses[0])
 
 if __name__ == '__main__':
-  main
+  main()
