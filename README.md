@@ -3,11 +3,12 @@
 hello this is readme for automatic task downloader for thu webpage
 
 task
-1. login learn.tsinghua.edu.cn 
-2. scrape tasks/webpage
-3. send tasks to dida
+1. export to 
+2.
+3. download hw files
 
 completed
 1. login learn.tsinghua.edu.cn
-2. get homework that has been assigned but has not been submitted
-3. 
+2. create folders for each course
+3. append csv with unsubmmited hw information
+4. 

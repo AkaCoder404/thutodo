@@ -32,7 +32,7 @@ arg_parser = argparse.ArgumentParser(description = 'thutodo') # argument parser
 # arg_parser.add_argument('--semester', help = 'semester')
 arg_parser.add_argument('--course', help = 'course')
 arg_parser.add_argument('--homework', help = 'homework')
-
+arg_parser.add_argument('--download', help = 'download')
 arg_parser.add_argument('--wj', help = 'unsubmitted homework', action="store_true")
 arg_parser.add_argument('--yj', help = 'submitted homework', action="store_true")
 arg_parser.add_argument('--yp', help = 'graded homework', action="store_true")
@@ -51,8 +51,7 @@ def request_page(request_url, data={}):
   except urllib.error.URLError as e:
     print(request_url, e.code, ':', e.reason)
   except Exception as e:
-    print(e, request_url)
-    
+    print(e, request_url)   
   
 def load_json(request_url, data={}): 
     try: 
@@ -62,6 +61,26 @@ def load_json(request_url, data={}):
     except Exception as e:
       print(e)
       return {}
+
+def download_resource():
+  print("downloading")
+  # filename = escape(name)
+  # if os.path.exists(filename) and os.path.getsize(filename) or 'Connection__close' in filename:
+  #     return
+  # try:
+  #     with TqdmUpTo(ascii=True, dynamic_ncols=True, unit='B', unit_scale=True, miniters=1, desc=filename) as t:
+  #         urllib.request.urlretrieve(url + uri, filename=filename, reporthook=t.update_to, data=None)
+  # except:
+  #     print('Could not download file %s ... removing broken file' % filename)
+  #     if os.path.exists(filename):
+  #         os.remove(filename)
+  #     return
+
+def append_announcement_csv():
+  print("append announcement csv")
+
+def load_announcements():
+  print("loading announcements")
 
 def load_courses():
     try:
@@ -88,11 +107,7 @@ def load_courses():
 def login(username, password):
   # api
   request_url = 'https://id.tsinghua.edu.cn/do/off/ui/auth/login/post/bb5df85216504820be7bba2b0ae1535b/0?/login.do'
-  data = {
-    'i_user' : username, 
-    'i_pass' : password,
-    'atOnce' : 'true'
-  }
+  data = { 'i_user' : username, 'i_pass' : password, 'atOnce' : 'true' }
 
   # make request and return page html
   page = request_page(request_url, data)
@@ -145,6 +160,7 @@ def load_hw(username, course):
     'size' : ''
   }
   
+  ## 作业未交、作业已交，作业已批改
   hw_types = ['zyListWj', 'zyListYjwg', 'zyListYpg']
 
   # load all hw for course
@@ -170,16 +186,17 @@ def load_hw(username, course):
       # print(hw_page_description.text)
 
 
-    append_hw_csv(os.path.join(csv_folder, username + '_unsubmited_hw.csv'), hw)
+    append_hw_csv(os.path.join(csv_folder, username + '_' + hw_types[0] + '.csv'), hw)
 
 def main():
   # arguments
   print(args)
   # username and password
-  username = input('请输入INFO账号: ')
-  password = getpass.getpass('请输入INFO密码: ')
+  # username = input('请输入INFO账号: ')
+  # password = getpass.getpass('请输入INFO密码: ')
 
-
+  username = "litq18"
+  password = "huabasket66!!!!"
 
   login_status = login(username, password)
 
@@ -195,12 +212,12 @@ def main():
     for course in courses:
       print('syncing', course['kcm'])
       # course folders feature to store relative documents
-      # if not os.path.exists(course['kcm']):
-      #   os.makedirs(course['kcm'])
+      if not os.path.exists(course['kcm']):
+        os.makedirs(course['kcm'])
 
       load_hw(username, course)
     # print(courses[0]['kcm'])
     # load_hw(courses[0])
 
 if __name__ == '__main__':
-  main();
+  main()
