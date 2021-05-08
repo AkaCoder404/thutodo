@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 
 # imports
@@ -104,6 +105,12 @@ def main():
   # load_tasks(session)
   
 
+=======
+
+
+def main():
+  print("dida")
+>>>>>>> 73ccedfb4ad58abf0c03bf8486ea5dcb52cad661
 
 if __name__ == '__main__':
   main()
