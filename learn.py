@@ -52,8 +52,7 @@ def request_page(request_url, data={}):
     print(request_url, e.code, ':', e.reason)
   except Exception as e:
     print(e, request_url)
-    
-  
+      
 def load_json(request_url, data={}): 
     try: 
       page = request_page(request_url, data)
@@ -171,6 +170,14 @@ def load_hw(username, course):
 
 
     append_hw_csv(os.path.join(csv_folder, username + '_unsubmited_hw.csv'), hw)
+
+def append_announcements_csv(file_name, hw):
+  """Appending Announcements CSV"""
+  
+def load_announcements(username, course):
+  """Loading Announcements"""
+
+
 
 def main():
   # arguments
