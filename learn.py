@@ -4,6 +4,7 @@
 import getpass # obscure text on terminal
 import argparse # parser for command line options 
 import json 
+import sys # handle command line arguments
 import csv
 import os # handle directory information
 import pprint # pretty printer for debugging
@@ -28,16 +29,14 @@ urllib.request.install_opener(opener)                 #
 
 pp = pprint.PrettyPrinter(indent=4, depth=3)          # pretty printer
 # argument parsers 
-arg_parser = argparse.ArgumentParser(description = 'thutodo') # argument parser
-# arg_parser.add_argument('--semester', help = 'semester')
-arg_parser.add_argument('--course', help = 'course')
-arg_parser.add_argument('--homework', help = 'homework')
-
-arg_parser.add_argument('--wj', help = 'unsubmitted homework', action="store_true")
-arg_parser.add_argument('--yj', help = 'submitted homework', action="store_true")
-arg_parser.add_argument('--yp', help = 'graded homework', action="store_true")
-
-args = arg_parser.parse_args()
+# arg_parser = argparse.ArgumentParser(description = 'thutodo') # argument parser
+# # arg_parser.add_argument('--semester', help = 'semester')
+# arg_parser.add_argument('--course', help = 'course')
+# arg_parser.add_argument('--homework', help = 'homework')
+# arg_parser.add_argument('--wj', help = 'unsubmitted homework', action="store_true")
+# arg_parser.add_argument('--yj', help = 'submitted homework', action="store_true")
+# arg_parser.add_argument('--yp', help = 'graded homework', action="store_true")
+# args = arg_parser.parse_args()
 
 def request_page(request_url, data={}):
   post_data = urllib.parse.urlencode(data).encode() if data else None
@@ -127,13 +126,17 @@ def append_hw_csv(file_name, hw):
   hw_info = [hw['kcm'], hw['bt'], hw['description'], hw['kssjStr'], hw['jzsjStr'], '0']
   # print(hw_info)
   # csv_content.append(hw_info)
-  if hw_info not in csv_content and current_time < hw['jzsjStr'] :
+  # print(csv_content)
+  if hw_info[0:5] not in [entry[0:5] for entry in csv_content] and current_time < hw['jzsjStr'] :
+    # hw_info = [*hw_info[0:5], *["0"]]
+    # print(hw_info)
+    # print(hw_info)
     csv_content.append(hw_info)
+    # print(csv_content)
     # print(csv_content)
     csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
 
   # csv.DictWriter(file, fieldnames=fields, lineterminator = '\n')
- 
 
 def load_hw(username, course):
   # create hw folder
@@ -176,11 +179,16 @@ def load_hw(username, course):
     append_hw_csv(os.path.join(csv_folder, 'unsubmitted.csv'), hw)
 
 def main():
-  # arguments
-  # print(args)
+  # can handle batch arguments
+  if len(sys.argv) > 1 :
+    print(len(sys.argv))
+    # print(sys.argv[0])
+    username = str(sys.argv[1])
+    password = str(sys.argv[2])
   # username and password
-  username = input('请输入INFO账号: ')
-  password = getpass.getpass('请输入INFO密码: ')
+  else:
+    username = input('请输入INFO账号: ')
+    password = getpass.getpass('请输入INFO密码: ')
 
   login_status = login(username, password)
 
@@ -202,6 +210,8 @@ def main():
       load_hw(username, course)
     # print(courses[0]['kcm'])
     # load_hw(courses[0])
+  print("learn.py完成")
+
 
 if __name__ == '__main__':
   main()

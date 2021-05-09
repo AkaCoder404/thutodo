@@ -2,11 +2,12 @@
 ECHO startup batch file for thutodo
 
 @REM find python on path
-For %%G In (python.exe) Do Set "PYTHONPATH=%%~$PATH:G"
+For %%G In (python.exe) Do SET "PYTHONPATH=%%~$PATH:G"
 
-@REM SET PYTHONPATH=%%p
+@REM SET PYTHONPATH=%%p 
 
 @REM ECHO %PYTHONPATH%
+IF "%PYTHONPATH%"=="" Do EXIT 
 
 @REM path to file
 SET "FILE_PATH=%~f0"
@@ -23,10 +24,17 @@ SET "DIDA_PY_PATH=%CURR_PATH%dida.py"
 
 @REM ECHO %LEARN_PY_PATH%
 
+@REM Insert Username and Password Here 
 ECHO running learn.py
-"%PYTHONPATH%" "%LEARN_PY_PATH%"
+SET /P "USERNAME=Info Username: "
+SET /P "PASSWORD=Info Password: "
+
+"%PYTHONPATH%" "%LEARN_PY_PATH%" "%USERNAME%" "%PASSWORD%" 
+
 ECHO running dida.py
-"%PYTHONPATH%" "%DIDA_PY_PATH%"
+SET /P "DIDA_USERNAME=Dida Username: "
+SET /P "DIDA_PASSWORD=Dida Password: "
+"%PYTHONPATH%" "%DIDA_PY_PATH%" "%DIDA_USERNAME%" "%DIDA_PASSWORD%"
 
 @REM PAUSE
 
