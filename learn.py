@@ -121,19 +121,11 @@ def append_hw_csv(file_name, hw):
     csv_content = [['课程名字', '作业', '说明', '生效日期', '截止日期', '状态']]
 
   current_time = str(datetime.datetime.now()).split('.')[0]
-  # print(current_time)
-
   hw_info = [hw['kcm'], hw['bt'], hw['description'], hw['kssjStr'], hw['jzsjStr'], '0']
-  # print(hw_info)
-  # csv_content.append(hw_info)
-  # print(csv_content)
+
   if hw_info[0:5] not in [entry[0:5] for entry in csv_content] and current_time < hw['jzsjStr'] :
     # hw_info = [*hw_info[0:5], *["0"]]
-    # print(hw_info)
-    # print(hw_info)
     csv_content.append(hw_info)
-    # print(csv_content)
-    # print(csv_content)
     csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
 
   # csv.DictWriter(file, fieldnames=fields, lineterminator = '\n')
@@ -211,7 +203,6 @@ def main():
     # print(courses[0]['kcm'])
     # load_hw(courses[0])
   print("learn.py完成")
-
 
 if __name__ == '__main__':
   main()

@@ -114,6 +114,7 @@ def load_tasks(session):
 
 def upload_tasks(groups, uploaded_tasks, tasks, session):
   '''upload tasks from csv to dida'''
+  print("上转作业")
   request_url = 'https://api.dida365.com/api/v2/batch/task'
 
   # Homework 清单 id
@@ -167,7 +168,7 @@ def upload_tasks(groups, uploaded_tasks, tasks, session):
     "delete": [],
     "update": []
     }
-    # request_page(request_url, data, session)
+    request_page(request_url, data, session)
 
 def login(username, password, session):
   '''login to Dida'''
