@@ -141,7 +141,6 @@ def append_hw_csv(file_name, hw):
       csv_content = [[entry.replace(u'\xa0', u' ') for entry in row] for row in csv_content]
       csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
      
-
 def load_hw(username, course):
   # create hw folder
   curr_direct = os.getcwd() 
@@ -201,7 +200,6 @@ def append_announcements_csv(file_name, announcement):
       # encoding error for character '\xa0'
       csv_content = [[entry.replace(u'\xa0', u' ') for entry in row] for row in csv_content]
       csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
-
 
 def load_announcements(username, course):
   '''load new announcements from learn'''
@@ -267,7 +265,6 @@ def main():
     password = getpass.getpass('请输入INFO密码: ')
 
   login_status = login(username, password)
-
 
   # if login succcessful
   if login_status: 
