@@ -10,13 +10,16 @@ Takes user's username and password as inputs and logs onto learn.tsinghua.edu.cn
 ## Dida.py
 Takes user's username and password for dida365.com and uploads the upcoming homework tasks in csv/unsubmmitted and uploads it to dida365. So far, it only uploads to the homework group, so make sure there is a homework group.
 
-task
+### task
 1. more possible functionality using command line args, argparse
   - download hw files to correct folder
   - download class materials to correct folder
   - choose what class specifically to update
 2. create dida365 homework group if it currently doesn't exist
-completed
+3. download announcements
+
+
+### completed
 1. login learn.tsinghua.edu.cn
 2. create folders for each course
 3. append csv with unsubmmited hw information

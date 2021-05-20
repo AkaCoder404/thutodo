@@ -28,8 +28,7 @@ request_headers = {
   'user-agent' : user_agent,
  }
 
-# post requests
-def request_page(request_url, data={}, session=None):
+def request_page_post(request_url, data={}, session=None):
   '''request page html'''
   try:
     response = session.post(url=request_url if request_url.startswith('http') else url + request_url, data=json.dumps(data), headers=request_headers)
@@ -37,7 +36,8 @@ def request_page(request_url, data={}, session=None):
     return response.json()
   except Exception as e:
     print('Error', e, request_url)
-# get requests
+    return {"errorCode" : e}
+
 def request_page_get(request_url, data={}, session=None):
   try:
     response = session.get(url=request_url if request_url.startswith('http') else url + request_url)
@@ -168,13 +168,13 @@ def upload_tasks(groups, uploaded_tasks, tasks, session):
     "delete": [],
     "update": []
     }
-    request_page(request_url, data, session)
+    request_page_post(request_url, data, session)
 
 def login(username, password, session):
   '''login to Dida'''
   request_url = 'https://api.dida365.com/api/v2/user/signon?wc=true&remember=true'
   data = {  "password" : password, "username": username }
-  page = request_page(request_url, data, session)
+  page = request_page_post(request_url, data, session)
   # print(page)
   successful = "username" in page
 

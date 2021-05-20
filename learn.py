@@ -12,6 +12,7 @@ import calendar, time, datetime # time stamp
 import urllib.request # library for opening urls
 import http.cookiejar # cookie handling for HTTP client
 
+
 from bs4 import BeautifulSoup as bs
 
 # headers and handlers
@@ -28,6 +29,8 @@ opener = urllib.request.build_opener(handler)         #
 urllib.request.install_opener(opener)                 # 
 
 pp = pprint.PrettyPrinter(indent=4, depth=3)          # pretty printer
+
+
 # argument parsers 
 # arg_parser = argparse.ArgumentParser(description = 'thutodo') # argument parser
 # # arg_parser.add_argument('--semester', help = 'semester')
@@ -39,9 +42,11 @@ pp = pprint.PrettyPrinter(indent=4, depth=3)          # pretty printer
 # args = arg_parser.parse_args()
 
 def request_page(request_url, data={}):
+  ''' handle url request'''
   post_data = urllib.parse.urlencode(data).encode() if data else None
-  # make request
-  request = urllib.request.Request(request_url if request_url.startswith('http') else url + request_url, post_data, request_headers)
+  request_url = request_url if request_url.startswith('http') else url + request_url
+  request = urllib.request.Request(request_url, post_data, request_headers)
+  # print(request_url)
 
   try: 
     # response = opener.open(request)
@@ -52,15 +57,18 @@ def request_page(request_url, data={}):
   except Exception as e:
     print(e, request_url)
 
-
 def load_json(request_url, data={}): 
-    try: 
-      page = request_page(request_url, data)
-      page_json = json.loads(page)
-      return page_json
-    except Exception as e:
-      print(e)
-      return {}
+  '''decode json object'''
+  try: 
+    page = request_page(request_url, data)
+    page_json = json.loads(page)
+    return page_json
+  except Exception as e:
+    print(e)
+    return {}
+
+def download():
+  '''download files'''
 
 def load_courses():
     try:
@@ -126,23 +134,23 @@ def append_hw_csv(file_name, hw):
   if hw_info[0:5] not in [entry[0:5] for entry in csv_content] and current_time < hw['jzsjStr'] :
     # hw_info = [*hw_info[0:5], *["0"]]
     csv_content.append(hw_info)
-    csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
-
-  # csv.DictWriter(file, fieldnames=fields, lineterminator = '\n')
+    try: 
+      csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
+    except UnicodeEncodeError as e:
+      print(e)
+      csv_content = [[entry.replace(u'\xa0', u' ') for entry in row] for row in csv_content]
+      csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
+     
 
 def load_hw(username, course):
   # create hw folder
   curr_direct = os.getcwd() 
-  # curr_direct_hw = os.path.join(course['kcm'], '作业')
-  # if not os.path.exists(curr_direct_hw):
-  #   os.makedirs(curr_direct_hw)
+  curr_direct_hw = os.path.join(course['kcm'], '作业')
+  if not os.path.exists(curr_direct_hw):
+    os.makedirs(curr_direct_hw)
 
   # data = {'aoData': [{"name": "wlkcid", "value": course['wlkcid']}]}
-  data = {
-    'wlkcid': course['wlkcid'],
-    'size' : ''
-  }
-
+  data = { 'wlkcid': course['wlkcid'], 'size' : '' }
   hw_types = ['zyListWj', 'zyListYjwg', 'zyListYpg']
 
   # load all hw for course
@@ -152,6 +160,8 @@ def load_hw(username, course):
       # hws = load_json("/b/wlxt/kczy/zy/student/" + hw_types[1], data)['object']['aaData']
   except Exception as e:
     print(e) 
+
+  print("没交的作业", len(hws))
 
   # append all hw to csv
   csv_folder = os.path.join('','csv')
@@ -164,17 +174,91 @@ def load_hw(username, course):
     hw_page_description = hw_page.find_all('div', class_='list calendar clearfix')[0].findChild('p')
     hw["description"] = ""
     if hw_page_description is not None:
-      hw["description"] = hw_page_description.text
-      # print(hw_page_description.text)
-
+      hw["description"] = hw_page_description.text.replace(u'\xa0', u' ')
+      
 
     append_hw_csv(os.path.join(csv_folder, 'unsubmitted.csv'), hw)
 
+def append_announcements_csv(file_name, announcement):
+  '''append the announcements csv'''
+  csv_content = []
+
+  try: 
+    csv_content = [i for i in csv.reader(open(file_name)) if i]
+  except:
+    csv_content = [['课程名字', '公告', '公告描述', '发布时间', '状态']]
+
+  # print(announcement)
+  announcement_info = [announcement['wlkcid'], announcement['title'], announcement['description'], announcement['post_date'], '0']
+  
+  current_time = str(datetime.datetime.now()).split('.')[0]
+
+  if announcement_info[0:5] not in [entry[0:5] for entry in csv_content]:
+    csv_content.append(announcement_info)
+    try: 
+      csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
+    except UnicodeEncodeError as e:
+      # encoding error for character '\xa0'
+      csv_content = [[entry.replace(u'\xa0', u' ') for entry in row] for row in csv_content]
+      csv.writer(open(file_name, 'w', newline='')).writerows(csv_content)
+
+
+def load_announcements(username, course):
+  '''load new announcements from learn'''
+  url = "/b/wlxt/kcgg/wlkc_ggb/student/pageListXs"
+  data = {
+    'aoData' : [
+      {"name":"sEcho","value":1},
+      {"name":"iColumns","value":3},
+      {"name":"sColumns","value":",,"},
+      {"name":"iDisplayStart","value":0},
+      {"name":"iDisplayLength","value":"30"},
+      {"name":"mDataProp_0","value":"bt"},
+      {"name":"bSortable_0","value":True},
+      {"name":"mDataProp_1","value":"fbr"},
+      {"name":"bSortable_1","value":True},
+      {"name":"mDataProp_2","value":"fbsj"},
+      {"name":"bSortable_2","value":True},
+      {"name":"iSortingCols","value":0},
+      {"name":"wlkcid","value": course['wlkcid']}
+    ]
+  }
+
+  announcements = []
+  try:
+    announcements_json = load_json(url, data)
+    announcements_list = announcements_json['object']['aaData']
+
+
+    remove = ['&lt;p&gt;', '&lt;/p&gt;', '&lt;/li&gt;', '&lt;li&gt;', '&amp;nbsp;', '&lt;ul&gt;', '\n' ]
+    remove = ",".join(map(str,remove))
+    announcements = [{
+      'title' : entry['bt'], 
+      'description' : entry['ggnrStr'].translate(str.maketrans('', '', remove)) if '成绩' not in entry['bt'] and entry['ggnrStr'] is not None else '',
+      'post_date' : entry['fbsj'], 
+      'sfqd': entry['sfqd'], 
+      'sfyd' : entry['sfyd'],
+      'wlkcid' : entry['wlkcid']
+      }
+    for entry in announcements_list if entry['bt'] != '' ]
+  
+    # print(announcements)
+  except Exception as e:
+    print(e);
+
+  print("公告个数", len(announcements))
+  csv_folder = os.path.join('','csv')
+
+  for announcement in announcements:  
+    append_announcements_csv(os.path.join(csv_folder, 'announcements.csv'), announcement)
+
+def load_documents(username, course):
+  '''load class materials from learn'''
+
 def main():
-  # can handle batch arguments
+  # handle batch arguments
   if len(sys.argv) > 1 :
     print(len(sys.argv))
-    # print(sys.argv[0])
     username = str(sys.argv[1])
     password = str(sys.argv[2])
   # username and password
@@ -184,24 +268,25 @@ def main():
 
   login_status = login(username, password)
 
+
   # if login succcessful
   if login_status: 
     courses = load_courses()
-    # info
     # print("本学期的课程和课程信息")
     # for course in courses:
-    #   print(course['kcm'], course['kch'] + "-" + course['kxhnumber'], course['ywkcm'])
+      # print(course)
+      # print(course['kcm'], course['kch'] + "-" + course['kxhnumber'], course['ywkcm'])
 
     # make course folder, sync course information. homework
     for course in courses:
       print('syncing', course['kcm'])
       # course folders feature to store relative documents
-      # if not os.path.exists(course['kcm']):
-      #   os.makedirs(course['kcm'])
+      if not os.path.exists(course['kcm']):
+        os.makedirs(course['kcm'])
 
       load_hw(username, course)
-    # print(courses[0]['kcm'])
-    # load_hw(courses[0])
+      load_announcements(username, course)
+
   print("learn.py完成")
 
 if __name__ == '__main__':
