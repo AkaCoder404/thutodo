@@ -1,8 +1,8 @@
 # README.md
 
-hello this is readme for automatic task downloader for thu webpage, and uploader to dida todo list application
+hello this is readme for automatic task/hw downloader from the thu webpage (learn.tsinghua.edu.cn), and task uploader to 滴答（dida) todo list application
 
-this is split into two parts, learn.py and dida.py
+this script can be split into two parts, learn.py and dida.py
 
 ## Learn.py
 Takes user's username and password as inputs and logs onto learn.tsinghua.edu.cn to get the current homework list of this semester. The applciation parses each classes unsubmitted homework list and retrieves its name, description, the date assigned, and the date due and outputs it to csv/unsubmmitted.csv
@@ -17,7 +17,6 @@ Takes user's username and password for dida365.com and uploads the upcoming home
   - choose what class specifically to update
 2. create dida365 homework group if it currently doesn't exist
 3. download announcements
-
 
 ### completed
 1. login learn.tsinghua.edu.cn
